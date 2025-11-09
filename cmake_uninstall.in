@@ -1,0 +1,36 @@
+# cmake_uninstall.in
+
+# Διαβάζουμε το αρχείο καταγραφής εγκατάστασης που περιέχει όλα τα εγκατεστημένα αρχεία
+if(NOT EXISTS "@CMAKE_INSTALL_MANIFEST@")
+  message(FATAL_ERROR "Cannot find install manifest: @CMAKE_INSTALL_MANIFEST@")
+endif(NOT EXISTS "@CMAKE_INSTALL_MANIFEST@")
+
+file(READ "@CMAKE_INSTALL_MANIFEST@" files)
+
+# Μετατρέπουμε τη λίστα των αρχείων σε μια λίστα του CMake
+string(REGEX REPLACE "\n" ";" files "${files}")
+
+message(STATUS "Uninstalling files...")
+foreach(file ${files})
+  message(STATUS "Deleting $ENV{DESTDIR}${file}")
+  
+  # Διαγράφουμε το αρχείο
+  if(EXISTS "$ENV{DESTDIR}${file}")
+    execute_process(
+      COMMAND @CMAKE_COMMAND@ -E rm -f "$ENV{DESTDIR}${file}"
+      OUTPUT_VARIABLE rm_output
+      RESULT_VARIABLE rm_return_value
+    )
+    if(NOT rm_return_value EQUAL 0)
+      message(FATAL_ERROR "Error removing file $ENV{DESTDIR}${file}")
+    endif(NOT rm_return_value EQUAL 0)
+  endif(EXISTS "$ENV{DESTDIR}${file}")
+endforeach(file)
+
+# Τέλος, προσπαθούμε να αφαιρέσουμε τους άδειους καταλόγους
+message(STATUS "Removing empty directories...")
+execute_process(
+  COMMAND @CMAKE_COMMAND@ -E remove_directory "@CMAKE_INSTALL_PREFIX@/share/doc/@PROJECT_NAME@"
+  OUTPUT_VARIABLE rmdir_output
+  RESULT_VARIABLE rmdir_return_value
+)
